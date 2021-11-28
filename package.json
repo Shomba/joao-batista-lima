@@ -1,0 +1,23 @@
+{
+  "name": "joao-batista-lima",
+  "version": "0.0.1",
+  "description": "um bot de musica do discor",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [
+    "discord",
+    "music",
+    "bot"
+  ],
+  "author": "shoomba",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/builders": "^0.8.2",
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "discord-api-types": "^0.24.0",
+    "ffmpeg": "^0.0.4",
+    "ytdl-core": "^4.9.1"
+  }
+}
