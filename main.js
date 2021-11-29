@@ -1,63 +1,32 @@
-//#region setup inicial
-const Discord = require("discord.js");
-const { REST } = require('@discordjs/rest');
-const routs = require("discord-api-types/v9")
-const cfg = require("./config.json");
-const auth = require("./auth.json");
-const ytdl = require("ytdl-core");
-const colors = require('colors');
-const bot = new Discord.Client();
-const fs = require("fs");
-const print= console.log;
+const fs = require('fs');
+const { Client, Collection, Intents } = require('discord.js');
+const { token } = require('./config.json');
+console.log(require('discord.js').version)
+const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
-var commands = []
-//#endregion
-
-//#region açoes
-bot.once("ready",()=>{
-    print('ready!'.green)
-    bot.user.setPresence({
-        status:"online",
-        activity:{
-            type:"LISTENING",
-            name:"oque os otros me obrigarem",
-            url:"https://youtu.be/dQw4w9WgXcQ"
-        }
-    })
-})
-bot.on("message",(msg)=>{
-    if(msg.content.startsWith(cfg.prefix)){
-        if(msg.content == msg.prefix+"ping"){
-            msg.channel.send("pong");
-        }
-    }
-})
-//#endregion
-//login
-bot.login(auth.token);
-
-
-//#region comandos
-var commandfiles = fs.readdirSync('./comands').filter(file => file.endsWith(".js"))
-for (const file of commandfiles){
-    const comand = require(`./comands/${file}`);
-    commands.push(comand.data.toJSON())
+client.commands = new Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+var queue = {}
+for (const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+	client.commands.set(command.data.name, command);
 }
-const rest = new REST({ version: '9' }).setToken(token);
 
-(async () => {
+client.once('ready', () => {
+	console.log('Ready!');
+});
+
+client.on('interactionCreate', async interaction => {
+	
+	const command = client.commands.get(interaction.commandName);
+	if (!command) return;
+
 	try {
-		console.log('Started refreshing application (/) commands.');
-
-		await rest.put(
-			Routes.applicationGuildCommands(bot.user.id),
-			{ body: commands },
-		);
-
-		console.log('Successfully reloaded application (/) commands.');
+		await command.execute(interaction,queue[interaction.guildId] );
 	} catch (error) {
 		console.error(error);
+		return interaction.reply({ content: 'ocorreu um erro durante a execução desse comando', ephemeral: true });
 	}
-})();
+});
 
-//#endregion
+client.login(token);
